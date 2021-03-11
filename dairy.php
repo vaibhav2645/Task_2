@@ -113,7 +113,7 @@ color:white;
 <p class="lead" >Your own private diary, with you wherever you go.</p>
 
 
-<p class="bold marginTop">Interested? Please Sign Up!</p>
+<p class="bold marginTop">Interested? Sign Up Now!</p>
 
 <form  method="post">
 
