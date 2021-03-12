@@ -1,147 +1,84 @@
-
-
-
+<?php 
+	session_start();
+?>
 <!DOCTYPE html>
-<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Secret Diary</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-<style>
-.navbar-brand {
-font-size:1.8em;
-font-weight:bold;
-}
-#topContainer {
-background-image:url("https://acemandesigns.com/MYSQL/Mydiary/background.jpg");
-height:400px;
-width:100%;
- height: auto;
-width:auto;
-background-size:cover;
-background-position: center;
-}
-#topRow {
-margin-top:100px;
-text-align:center;
-}
-#topRow h1 {
-font-size:500%;
-font-weight:bold;
-}
-#emailSignup {
-margin-top:50px;
-}
-
-.marginTop {
-margin-top:30px;
-color:white;
-}
-.center {
-text-align:center;
-}
-.title {
-margin-top:100px;
-font-size:300%;
-}
-.bold{
-font-weight:bold;
-font-size:170%;
-	}
-.lead{
-color:white;
-}
-label{
-color:white;
-}
-
-
-</style>
+	
+<title>The secret Diary project</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+<link rel="stylesheet" href="custom.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 </head>
-<body data-spy="scroll" data-target=".navbar-collapse">
-<div class="navbar navbar-inverse navbar-fixed-top">
-<div class="container">
-<div class="navbar-header">
-<button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-<span class="sr-only">Toggle navigation</span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-<span class="icon-bar"></span>
-</button>
+<body>
 
-<a href=""class="navbar-brand"   >My Secret Diary</a>
-</div>
-<div class="collapse navbar-collapse">
-<form class="navbar-form navbar-right"  method="post" role="form">
-<div class="form-group">
-<input type="email" name="loginemail" id="loginemail" placeholder="Email"class="form-control" value="" autocomplete="new-password"/>
-</div>
-
-<div class="form-group">
-<input type="password" name="loginpassword" id="loginpassword"placeholder="Password"class="form-control" value="" autocomplete="new-password"/>
-</div>
-
-<input type="submit" value="Login" name="submit" class="btn btn-success" >
-</form>
-
-</div>
-</div>
-</div>
-
-<div class="container contentContainer" id="topContainer">
-<div class="row">
-<div class="col-md-6 col-md-offset-3" id="topRow">
-<h1 class="marginTop">My Secret Diary</h1>
-<p class="lead" >Your own private diary, with you wherever you go.</p>
+<div class="container col-md-6">
+<?php 
+include 'connect.php'; //Connect to the SQL database
 
 
-<p class="bold marginTop">Interested? Sign Up Now!</p>
 
-<form  method="post">
+if ( //check if user is logged-in
+	isset($_SESSION['username'])
+	 || 
+	isset($_COOKIE['username']) 
+	){
+if(	isset($_COOKIE['username']) ){	$username=$_COOKIE['username'];}
+	else{$username=$_SESSION['username'];}
+			
+		if(			isset($_POST['diary'])			){
+	$diary=$_POST['diary'];
+	$query = "UPDATE `users` SET `story`='$diary' WHERE username='".mysqli_real_escape_string($link,$username)."'";
+	mysqli_query($link,$query);
+		}
+	
 
-<div class="form-group">
-<label for="email">Email Address:</label>
-<input type="email" name="email" id="email" class="form-control" placeholder="Email" value="" autocomplete="new-password"/>
-</div>
+	$verifConnect=true;
+	;
+} else 
+		//Check if username & password match
+	if (		!empty($_POST['username']) && !empty($_POST['password'])		){
+$username=$_POST['username'];
+$password=$_POST['password'];
+$query="SELECT `password` FROM `users` WHERE `username`='".mysqli_real_escape_string($link,$username)."'";
+$result=mysqli_query($link,$query);
+$row=mysqli_fetch_array($result);
+		if(	password_verify($password,$row[0])	){
+		$verifLogin=true;
+		$_SESSION['username']=$username;
+			if (	isset($_POST['staylogged'])	) {
+					setcookie("username", $username, time() + (60*60*24) );
+			}		
+		} else {
+			echo"hello1";header("refresh:2;url=index.php?p=wrong");die();}
+	}
 
-<div class="form-group">
-<label for="password">Password</label>
-<input type="password" name="password" id="password" class="form-control" placeholder="Password" value=""autocomplete="new-password"/>
-</div>
+if (isset($verifConnect) || isset($verifLogin)){
+$query= "SELECT `story` FROM `users` WHERE `username`='".mysqli_real_escape_string($link,$username)."'";
+	$result=mysqli_query($link,$query);
+	$storyfetched=mysqli_fetch_array($result);
 
-<input type="submit" value="Sign Up" name="submit"  class="btn btn-success btn-lg
-marginTop" />
-</form>
-</div>
-</div>
-</div>
+	echo"<h2>Welcome $username, <a href='logout.php'>Log-out</a></h2>";
+	echo'
+  <textarea id="diarybox" placeholder="Write you diaries here" class="form-control" rows="5" id="comment">'.$storyfetched[0].'</textarea>
+	';
+} else {
+		echo"hello";header("refresh:2;url=index.php?p=wrong");die();}
 
-
-<script src="https://code.jquery.com/jquery-2.2.4.min.js" ></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
-<script>
-$(".contentContainer").css("min-height",$(window).height());
-</script>
-
-</body>
-<script>
-$(function(){
-    $('.nav-tabs a:first').tab('show');/* for navbar to work*/
-
-}); 
-
-</script>
-<script>
-$(document).on('click','.navbar-collapse.in',function(e) {
-    if( $(e.target).is('a') ) {
-        $(this).collapse('hide');
-    }
-});
-</script>
-</html>
+	
+?>
+ </div>
+ </body>
+ <script
+  src="https://code.jquery.com/jquery-3.2.1.js"
+  integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+  crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  	$("#diarybox").on( 'input', function(){
+    $.post("diary.php",
+    {
+        diary: $('#diarybox').val()
+    }   );
+	});
+  </script>
